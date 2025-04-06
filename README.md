@@ -1,18 +1,19 @@
 # Expense-Reimbursement
 This repository houses an "Expense Reimbursement" Web Application with Front-End Web Interface, and a Back-End API service.
 
-#Hours Expected/spent
+# Hours Expected/spent
 - Expected Hours: 10 hours
 	- .5 hours - Requirements understanding/planning
 	- .5 hours - creating Git Repository
 	- 1 hour - Designing PostgreSQL Database (Table Structure, Normalization, etc)
-	- 1 hour - connecting PostgreSQL Database to Expense-Reimbursement Git Repository
+	- 1 hour - connecting PostgreSQL Database to Expense-Reimbursement Project
 	- 4 hours - designing/implementing Front-End Web Interface alligning with Project Requirements
 	- 3 hours - connecting Back-End API with Web Interface and PostgreSQL Database
 
-- Hours Spent (so far): 1 hour
+- Hours Spent (so far): 3 hours
 	- .5 hours - Requirements understanding/planning
 	- .5 hours - creating Git Repository
+	- 2 hours - Designing and connecting PostgreSQL Database to Expense-Reimbursement Project
 
 # How to Run
 
@@ -25,7 +26,7 @@ This repository houses an "Expense Reimbursement" Web Application with Front-End
 
 # Comments:
 	- 1: Assumptions made during implementation
-	
+		- I am assuming that when a "Receipt" is approved for reimbursement, the reimbursed funds will be added to the employees next paycheck (handled outside of the Expense-Reimbursement Web Application)
 	- 2: Problems I came across / How I solved them
 	
 	- 3: Highlights in my submission
