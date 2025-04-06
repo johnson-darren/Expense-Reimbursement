@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\ExpenseReimbursement_WebApplication.props" />
+</Project>
