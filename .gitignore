@@ -1,1 +1,24 @@
+# .NET
 .vs/
+.vscode/
+.idea/
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+# Build results
+bin/
+obj/
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+# Logs
+*.log
+# Npm packages
+node_modules/
+# User-specific settings for Visual Studio Code
+.settings/
+# Package directory for Blazor WebAssembly
+wwwroot/_content/
+# Publish directory for Blazor WebAssembly
+publish/
