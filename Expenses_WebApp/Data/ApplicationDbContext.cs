@@ -12,6 +12,7 @@
         public DbSet<Role> Roles { get; set; }
         public DbSet<Status> Statuses { get; set; }
         public DbSet<Receipt> Receipts { get; set; }
+        public DbSet<Receipt_File> Receipt_Files { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

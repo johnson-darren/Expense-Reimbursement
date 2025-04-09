@@ -9,33 +9,75 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
     <MudText Typo="Typo.h4">Submit a New Expense</MudText>
 
-    <MudPaper Class="p-4 mt-4">
-        <MudForm @ref="form" Model="receipt" OnValidSubmit="SubmitExpense">
-            <MudTextField T="string" Label="Description" For="@(() => receipt.Description)" Required="true" />
-            <MudNumericField T="float" Label="Amount" For="@(() => receipt.Amount)" Required="true" />
-            <MudDatePicker Label="Date"
-                           Date="@receipt.Date_Purchased"
-                           DateChanged="@(val => receipt.Date_Purchased = val)"
-                           Required="true"
-                           RequiredError="Please select a date" />
+    <MudPaper Class="p-6 mt-4" Style="position: relative; z-index: 1;">
+        <MudForm @ref="form">
+            <MudGrid Spacing="3">
+                <MudItem xs="12">
+                    <MudSelect T="int" Label="User" @bind-Value="receipt.User_ID" Required="true">
+                        @foreach (var user in users)
+                        {
+                            <MudSelectItem Value="@user.User_ID">@user.First_Name @user.Last_Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
 
-            <MudSelect T="int" Label="Status" @bind-Value="receipt.Status_ID" Required="true">
-                @foreach (var status in statuses)
-                {
-                    <MudSelectItem Value="@status.Status_ID">@status.Status_Name</MudSelectItem>
-                }
-            </MudSelect>
+                <MudItem xs="12">
+                    <MudTextField T="string" Label="Description" @bind-Value="receipt.Description" Required="true" />
+                </MudItem>
 
-            <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">Upload Receipt File</MudText>
-            <InputFile OnChange="HandleFileUpload" />
+                <MudItem xs="12">
+                    <MudNumericField T="float" Label="Amount" @bind-Value="receipt.Amount" Required="true" />
+                </MudItem>
 
-            <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">Submit</MudButton>
+                <MudItem xs="12">
+                    <MudDatePicker Label="Date Purchased"
+                                   Date="@receipt.Date_Purchased"
+                                   DateChanged="@(val => receipt.Date_Purchased = val)"
+                                   Required="true"
+                                   RequiredError="Please select a date" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Class="mt-2">Upload Receipt File</MudText>
+                    <InputFile OnChange="HandleFileUpload" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudButton OnClick="SubmitExpense" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">
+                        Submit
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
         </MudForm>
     </MudPaper>
 
     @if (isSuccess)
     {
-        <MudAlert Severity="Severity.Success" Class="mt-3">Expense submitted successfully!</MudAlert>
+        <MudAlert Severity="Severity.Success" Class="mt-4">
+            Expense submitted successfully!
+        </MudAlert>
+    }
+
+    @if (submittedReceipts.Any())
+    {
+        <MudText Typo="Typo.h5" Class="mt-6 mb-2">Submitted Expenses</MudText>
+
+        <MudTable Items="submittedReceipts" Hover="true" Dense="true">
+            <HeaderContent>
+                <MudTh>User</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Amount</MudTh>
+                <MudTh>Date Purchased</MudTh>
+                <MudTh>Submitted At</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.User.First_Name @context.User.Last_Name</MudTd>
+                <MudTd>@context.Description</MudTd>
+                <MudTd>@context.Amount.ToString("C")</MudTd>
+                <MudTd>@context.Date_Purchased?.ToString("yyyy-MM-dd")</MudTd>
+                <MudTd>@context.Submitted_At.ToString("g")</MudTd>
+            </RowTemplate>
+        </MudTable>
     }
 </MudContainer>
 
@@ -43,42 +85,107 @@
     private MudForm form;
     private Receipt receipt = new();
     private Receipt_File file = new();
-    private List<Status> statuses = new();
+    private List<User> users = new();
     private bool isSuccess = false;
-
-
+    private List<Receipt> submittedReceipts = new();
 
     protected override async Task OnInitializedAsync()
     {
-        statuses = await DbContext.Statuses.ToListAsync();
-        receipt.Date_Purchased = DateTime.Today;
-    }
+        try
+        {
+            users = await DbContext.Users.ToListAsync();
+            Console.WriteLine($"[DEBUG] Loaded {users.Count} users.");
 
+            receipt.Date_Purchased = DateTime.Today;
+
+            if (users.Count > 0)
+                receipt.User_ID = users.First().User_ID;
+
+            await RefreshSubmittedReceipts();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] OnInitializedAsync failed: {ex.Message}");
+        }
+    }
 
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
     {
-        var uploadedFile = e.File;
-        var buffer = new byte[uploadedFile.Size];
-        await uploadedFile.OpenReadStream().ReadAsync(buffer);
+        try
+        {
+            var uploadedFile = e.File;
+            if (uploadedFile is not null)
+            {
+                var buffer = new byte[uploadedFile.Size];
+                await uploadedFile.OpenReadStream().ReadAsync(buffer);
 
-        file.File_Name = uploadedFile.Name;
-        file.File_Data = buffer;
+                file.File_Name = uploadedFile.Name;
+                file.File_Data = buffer;
+                Console.WriteLine($"[DEBUG] File uploaded: {file.File_Name} ({file.File_Data.Length} bytes)");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] File upload failed: {ex.Message}");
+        }
     }
 
     private async Task SubmitExpense()
     {
+        Console.WriteLine("[DEBUG] Submit button clicked.");
         await form.Validate();
+        Console.WriteLine($"[DEBUG] Form Valid: {form.IsValid}");
+        Console.WriteLine($"[DEBUG] File Data is Null: {file.File_Data is null}");
 
-        if (!form.IsValid)
+        if (!form.IsValid || file.File_Data is null)
             return;
 
-        receipt.Receipt_File = file;
-        DbContext.Receipts.Add(receipt);
-        await DbContext.SaveChangesAsync();
+        try
+        {
+            var receiptFile = new Receipt_File
+                {
+                    File_Name = file.File_Name,
+                    File_Data = file.File_Data,
+                    Uploaded_At = DateTime.UtcNow
+                };
 
-        isSuccess = true;
-        receipt = new();
-        file = new();
-        StateHasChanged();
+            DbContext.Receipt_Files.Add(receiptFile);
+            await DbContext.SaveChangesAsync();
+            Console.WriteLine("[DEBUG] Receipt file saved.");
+
+            var newReceipt = new Receipt
+                {
+                    User_ID = receipt.User_ID,
+                    Amount = receipt.Amount,
+                    Date_Purchased = receipt.Date_Purchased?.ToUniversalTime(),
+                    Description = receipt.Description,
+                    Status_ID = 1, // Submitted
+                    Submitted_At = DateTime.UtcNow,
+                    Receipt_File_ID = receiptFile.Receipt_File_ID,
+                    Checked_By = 0,
+                    Checked_At = DateTime.MinValue
+                };
+
+            DbContext.Receipts.Add(newReceipt);
+            await DbContext.SaveChangesAsync();
+            Console.WriteLine("[DEBUG] Receipt saved.");
+
+            isSuccess = true;
+            receipt = new() { Date_Purchased = DateTime.Today };
+            file = new();
+            await form.ResetAsync();
+            await RefreshSubmittedReceipts();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] SubmitExpense failed: {ex.Message}");
+        }
+    }
+    private async Task RefreshSubmittedReceipts()
+    {
+        submittedReceipts = await DbContext.Receipts
+            .Include(r => r.User)
+            .OrderByDescending(r => r.Submitted_At)
+            .ToListAsync();
     }
 }
