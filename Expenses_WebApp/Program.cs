@@ -1,4 +1,4 @@
-using Expenses_WebApp.Components;
+﻿using Expenses_WebApp.Components;
 using Expenses_WebApp.Data;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddMudServices(); 
+builder.Services.AddMudServices();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

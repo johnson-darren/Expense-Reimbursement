@@ -38,7 +38,7 @@
                     }
                 </MudSelect>
 
-                <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">
                     Create User
                 </MudButton>
             </MudForm>
@@ -46,12 +46,14 @@
     }
     else
     {
-        <MudSelect T="int" Label="Select Existing User" @bind-Value="selectedUserId" Class="mt-4" Required="true">
-            @foreach (var user in users)
-            {
-                <MudSelectItem Value="@user.User_ID">@user.First_Name @user.Last_Name</MudSelectItem>
-            }
-        </MudSelect>
+        <MudPaper Class="p-4 mt-4" Style="max-width: 400px;">
+            <MudSelect T="User" Label="Select Existing User" @bind-Value="selectedUser" Required="true">
+                @foreach (var user in users)
+                {
+                    <MudSelectItem Value="@user">@user</MudSelectItem>
+                }
+            </MudSelect>
+        </MudPaper>
         <MudButton OnClick="SelectUser" Variant="Variant.Filled" Color="Color.Primary" Class="mt-2">
             Continue
         </MudButton>
@@ -68,7 +70,7 @@
 @code {
     private bool isCreatingNewUser = false;
     private User newUser = new();
-    private int selectedUserId;
+    private User? selectedUser; // ✅ newly added
     private List<User> users = new();
     private List<Department> departments = new();
     private List<Role> roles = new();
@@ -81,6 +83,9 @@
             departments = await DbContext.Departments.ToListAsync();
             roles = await DbContext.Roles.ToListAsync();
             users = await DbContext.Users.ToListAsync();
+
+            selectedUser = users.FirstOrDefault(); // after loading users
+
         }
         catch (Exception ex)
         {
@@ -104,16 +109,18 @@
         await DbContext.SaveChangesAsync();
 
         users = await DbContext.Users.ToListAsync();
+        selectedUser = newUser; // Optionally preselect
         isCreatingNewUser = false;
         newUser = new(); // Reset form
     }
 
     private void SelectUser()
     {
-        var selectedUser = users.FirstOrDefault(u => u.User_ID == selectedUserId);
-        if (selectedUser != null)
+        if (selectedUser is not null)
         {
-            // Navigate or continue logic here
+            Console.WriteLine($"[DEBUG] Selected user: {selectedUser.First_Name} (ID: {selectedUser.User_ID})");
+            // Proceed with navigation or logic here
         }
     }
 }
+

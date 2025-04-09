@@ -8,8 +8,8 @@ namespace Expenses_WebApp.Data.DataModels
     {
         [Key]
         public int Receipt_File_ID { get; set; }
-        public string File_Name { get; set; }
-        public byte[] File_Data { get; set; }
+        public string? File_Name { get; set; }
+        public byte[]? File_Data { get; set; }
         public DateTime Uploaded_At { get; set; }
     }
 }

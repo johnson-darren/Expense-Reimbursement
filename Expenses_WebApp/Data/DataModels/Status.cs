@@ -8,7 +8,7 @@ namespace Expenses_WebApp.Data.DataModels
     {
         [Key]
         public int Status_ID { get; set; }
-        public string Status_Name { get; set; }
-        public string Status_Description { get; set; }
+        public string? Status_Name { get; set; }
+        public string? Status_Description { get; set; }
     }
 }

@@ -8,7 +8,7 @@ namespace Expenses_WebApp.Data.DataModels
     {
         [Key]
         public int Role_ID { get; set; }
-        public string Role_Name { get; set; }
-        public string Role_Description { get; set; }
+        public string? Role_Name { get; set; }
+        public string? Role_Description { get; set; }
     }
 }

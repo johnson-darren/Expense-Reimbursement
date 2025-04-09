@@ -8,14 +8,33 @@ namespace Expenses_WebApp.Data.DataModels
     {
         [Key]
         public int User_ID { get; set; }
-        public string First_Name { get; set; }
-        public string Last_Name { get; set; }
-        public string Email { get; set; }
+        public string? First_Name { get; set; }
+        public string? Last_Name { get; set; }
+        public string? Email { get; set; }
 
         public int Department_ID { get; set; }
-        public Department Department { get; set; }
+        [ForeignKey("Department_ID")]
+        public Department? Department { get; set; }
 
         public int Role_ID { get; set; }
-        public Role Role { get; set; }
+        [ForeignKey("Role_ID")]
+        public Role? Role { get; set; }
+
+        public override string ToString()
+        {
+            return $"{First_Name} {Last_Name}";
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is User other && this.User_ID == other.User_ID;
+        }
+
+        public override int GetHashCode()
+        {
+            return User_ID.GetHashCode();
+        }
+
+
     }
 }

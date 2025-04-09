@@ -1,9 +1,84 @@
 ﻿@page "/expenses"
+@rendermode InteractiveServer
 
-<h3>Expenses</h3>
+@using Expenses_WebApp.Data
+@using Expenses_WebApp.Data.DataModels
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
 
-<!-- TODO: Create Expenses Page -->
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h4">Submit a New Expense</MudText>
+
+    <MudPaper Class="p-4 mt-4">
+        <MudForm @ref="form" Model="receipt" OnValidSubmit="SubmitExpense">
+            <MudTextField T="string" Label="Description" For="@(() => receipt.Description)" Required="true" />
+            <MudNumericField T="float" Label="Amount" For="@(() => receipt.Amount)" Required="true" />
+            <MudDatePicker Label="Date"
+                           Date="@receipt.Date_Purchased"
+                           DateChanged="@(val => receipt.Date_Purchased = val)"
+                           Required="true"
+                           RequiredError="Please select a date" />
+
+            <MudSelect T="int" Label="Status" @bind-Value="receipt.Status_ID" Required="true">
+                @foreach (var status in statuses)
+                {
+                    <MudSelectItem Value="@status.Status_ID">@status.Status_Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">Upload Receipt File</MudText>
+            <InputFile OnChange="HandleFileUpload" />
+
+            <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">Submit</MudButton>
+        </MudForm>
+    </MudPaper>
+
+    @if (isSuccess)
+    {
+        <MudAlert Severity="Severity.Success" Class="mt-3">Expense submitted successfully!</MudAlert>
+    }
+</MudContainer>
 
 @code {
+    private MudForm form;
+    private Receipt receipt = new();
+    private Receipt_File file = new();
+    private List<Status> statuses = new();
+    private bool isSuccess = false;
 
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        statuses = await DbContext.Statuses.ToListAsync();
+        receipt.Date_Purchased = DateTime.Today;
+    }
+
+
+    private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        var uploadedFile = e.File;
+        var buffer = new byte[uploadedFile.Size];
+        await uploadedFile.OpenReadStream().ReadAsync(buffer);
+
+        file.File_Name = uploadedFile.Name;
+        file.File_Data = buffer;
+    }
+
+    private async Task SubmitExpense()
+    {
+        await form.Validate();
+
+        if (!form.IsValid)
+            return;
+
+        receipt.Receipt_File = file;
+        DbContext.Receipts.Add(receipt);
+        await DbContext.SaveChangesAsync();
+
+        isSuccess = true;
+        receipt = new();
+        file = new();
+        StateHasChanged();
+    }
 }
