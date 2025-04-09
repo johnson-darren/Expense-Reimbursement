@@ -26,7 +26,7 @@ namespace Expenses_WebApp.Data.DataModels
         public Receipt_File? Receipt_File { get; set; }
 
         public DateTime Submitted_At { get; set; }
-        public int Checked_By { get; set; }
-        public DateTime Checked_At { get; set; }
+        public int? Checked_By { get; set; }
+        public DateTime? Checked_At { get; set; }
     }
 }
